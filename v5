@@ -3,31 +3,31 @@ import shutil
 from concurrent.futures import ThreadPoolExecutor
 
 Extensions = {
-    "images" : ("JPEG", "JPG", "PNG"),
-    "videos" : ("AVI", "MP4", "MOV"),
-    "documents" : ("DOC", "DOCX", "TXT"),
-    "audio" : ("MP3", "OGG", "WAV"),
-    "archives" : ("ZIP", "GZ")
+    "images": ("jpeg", "jpg", "png"),
+    "videos": ("avi", "mp4", "mov"),
+    "documents": ("doc", "docx", "txt"),
+    "audio": ("mp3", "ogg", "wav"),
+    "archives": ("zip", "gz")
 }
 InverseExtensions = {
-    "JPEG": "images",
-    "JPG": "images",
-    "PNG": "images",
+    "jpeg": "images",
+    "jpg": "images",
+    "png": "images",
 
-    "AVI": "videos",
-    "MP4": "videos",
-    "MOV": "videos",
+    "avi": "videos",
+    "mp4": "videos",
+    "mov": "videos",
 
-    "DOCX": "documents",
-    "DOC": "documents",
-    "TXT": "documents",
+    "docx": "documents",
+    "doc": "documents",
+    "txt": "documents",
 
-    "MP3": "audio",
-    "OGG": "audio",
-    "WAV": "audio",
+    "mp3": "audio",
+    "ogg": "audio",
+    "wav": "audio",
 
-    "ZIP": "archives",
-    "GZ": "archives"
+    "zip": "archives",
+    "gz": "archives"
 }
 
 
@@ -40,7 +40,7 @@ def list_and_sort(mess_folder_path):
         for item in os.listdir(mess_folder_path):
             item_path = os.path.join(mess_folder_path, item)
             if os.path.isfile(item_path):
-                file_extension = item.split(".")[-1].upper()
+                file_extension = item.split(".")[-1].lower()
                 if file_extension in InverseExtensions:
                     category = InverseExtensions[file_extension]
                     files_by_type[category].append(item_path)
@@ -49,7 +49,6 @@ def list_and_sort(mess_folder_path):
             elif os.path.isdir(item_path):
                 dirs_list.append(item_path)
 
-       
         for category, files in files_by_type.items():
             category_path = os.path.join(mess_folder_path, category)
             if not os.path.exists(category_path):
@@ -59,13 +58,16 @@ def list_and_sort(mess_folder_path):
 
         return files_by_type, files_without_type_list, dirs_list
 
+
 def execution(mess_folder_path):
     if os.path.isdir(mess_folder_path):
-        list_and_sort(mess_folder_path)
+        existing_dir_list = [odl for odl in os.listdir(mess_folder_path) if os.path.isdir(os.path.join(mess_folder_path, odl))]
+        dirs_list, files_without_type_list, files_by_type = list_and_sort(mess_folder_path)
         with ThreadPoolExecutor(max_workers=5) as executor:
-            for item in os.listdir(mess_folder_path):
-                sub_folder_path = os.path.join(mess_folder_path, item)
+            for sub_folder in existing_dir_list:
+                sub_folder_path = os.path.join(mess_folder_path, sub_folder)
                 if os.path.isdir(sub_folder_path):
                     executor.submit(execution, sub_folder_path)
+
 
 execution("/Users/Dorota/Documents/MessDir")
